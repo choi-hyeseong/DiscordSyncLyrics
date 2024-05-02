@@ -27,7 +27,6 @@ class LyricsWriter(private val lyricsParser: LyricsParser) : AudioEventAdapter()
 
         val lyrics : Lyrics? = lyricsParser.parse(lyricsQueue.poll())
         //매칭되는 가사가 없을경우 return
-        println("lyrics : $lyrics")
         if (lyrics == null || lyrics.syncedLyrics.isEmpty())
             return
 
