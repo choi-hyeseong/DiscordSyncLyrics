@@ -2,6 +2,7 @@
 
 시간대별로 실시간 가사를 보여주는 봇입니다. - Beta
 
+![GIF 2024-05-03 오전 2-51-56](https://github.com/choi-hyeseong/EggTranslate/assets/114974288/b30f00ae-bac5-4943-9bf4-b354ada52f98)
 
 ### 사용 라이브러리
 * LavaPlayer
