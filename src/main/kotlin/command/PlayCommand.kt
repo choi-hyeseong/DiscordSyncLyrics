@@ -30,7 +30,7 @@ class PlayCommand(val manager: PlayerManager) : ListenerAdapter() {
             audioManager.openAudioConnection(channel)
 
             //재생 - 큐에 등록
-            manager.loadMusic(parsedArgument)
+            manager.loadMusic(parsedArgument, music)
 
 
         }

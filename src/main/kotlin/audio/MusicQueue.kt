@@ -8,10 +8,12 @@ import jda
 import net.dv8tion.jda.api.JDA
 import java.util.LinkedList
 import java.util.Queue
+import kotlin.concurrent.thread
 
 class MusicQueue : AudioEventAdapter() {
 
     private val queue : Queue<AudioTrack> = LinkedList() //Queue의 구현체로 LinkedList 사용
+
 
     //해당 addMusic을 쓰는 클래스는 PlayerManger이므로 audioPlayer 원본을 갖고 있음.
     fun addMusic(audioPlayer: AudioPlayer, audioTrack: AudioTrack) {
@@ -21,9 +23,11 @@ class MusicQueue : AudioEventAdapter() {
 
     override fun onTrackStart(player: AudioPlayer?, track: AudioTrack?) {
         jda.getTextChannelsByName("일반", true)[0].sendMessage("노래가 재생됩니다. Track : ${track?.identifier}").queue()
+
     }
 
     override fun onTrackEnd(player: AudioPlayer?, track: AudioTrack?, endReason: AudioTrackEndReason?) {
+
         //track 종료시
         if (endReason != null && endReason.mayStartNext) {
             //다음꺼 실행 하는거라면
