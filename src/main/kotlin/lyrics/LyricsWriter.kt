@@ -24,29 +24,28 @@ class LyricsWriter(private val lyricsParser: LyricsParser) : AudioEventAdapter()
         lyricsQueue.add(music)
     }
 
-    override fun onTrackStart(player: AudioPlayer?, track: AudioTrack?) {
+    //실제 가사 출력하는 함수 - 무한루프
+    private suspend fun runLyricsPrint(audioPlayer: AudioPlayer, lyrics: Lyrics) {
+        message = jda.getTextChannelsByName("일반",true)[0].sendMessage(lyrics.syncedLyrics.poll().lyrics).complete()
+        while (true) {
+            val isPrintSuccess = runCatching {
+                // TODO send empty message 해결
+                if (lyrics.syncedLyrics.peek().time <= audioPlayer.playingTrack?.position?.div(1000L)!!)
+                    message = message!!.editMessage(lyrics.syncedLyrics.poll().lyrics).complete()
+                Thread.sleep(500)
+            }.isSuccess //오류 없이 출력이 되었는지 확인
+            if (!isPrintSuccess)
+                break //실패시 while문 종료
+        }
+    }
+
+    override fun onTrackStart(player: AudioPlayer, track: AudioTrack?) {
         CoroutineScope(Dispatchers.IO).launch {
             val lyrics : Lyrics? = async { lyricsParser.parse(lyricsQueue.poll()) }.await() //lyrics 가져오기 (coroutine) await 되어서 가져올대까지 기다림
             //매칭되는 가사가 없을경우 return
             if (lyrics == null || lyrics.syncedLyrics.isEmpty())
                 return@launch
-
-            message = jda.getTextChannelsByName("일반",true)[0].sendMessage(lyrics.syncedLyrics.poll().lyrics).complete()
-            job = async {
-                //가사 불러오기용 쓰레드
-                //코드는 지저분하지만 일단 돌아만 가게..
-                while (true) {
-                    try {
-                        // TODO send empty message 해결
-                        if (lyrics.syncedLyrics.peek().time <= player!!.playingTrack?.position?.div(1000L)!!)
-                            message = message!!.editMessage(lyrics.syncedLyrics.poll().lyrics).complete()
-                        Thread.sleep(500)
-                    }
-                    catch (e : InterruptedException) {
-                        break
-                    }
-                }
-            }
+            job = async { runLyricsPrint(player, lyrics) }
         }
 
     }

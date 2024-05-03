@@ -35,32 +35,9 @@ class PlayerManager(
     //음악로드, 입력받은 문장을 파싱해서 검색
     fun loadMusic(music: String) {
         val identifier = parseMusicArgument(music).also { println("Parsed Argument $it") }
-        playerManager.loadItem(identifier, object : AudioLoadResultHandler {
-            override fun trackLoaded(track: AudioTrack) {
-                lyricsWriter.addLyrics(music) //먼저 writer에 추가해줘야 함.
-                //일단 로드되면 스타트 해보고, noInterrupt이기 때문에 이미 재생중이라 재생 안되면 큐에 등록
-                if (!audioPlayer.startTrack(track, true))
-                    musicQueue.addMusic(track)
-
-
-            }
-
-            override fun playlistLoaded(playlist: AudioPlaylist) {
-                lyricsWriter.addLyrics(music)
-                val firstTrack = playlist.tracks.first()
-                if (!audioPlayer.startTrack(firstTrack, true))
-                    musicQueue.addMusic(firstTrack)
-
-            }
-
-            override fun noMatches() {
-                println("not matched")
-            }
-
-            override fun loadFailed(exception: FriendlyException?) {
-                println("load failed $exception")
-            }
-        })
+        //Handler로 분리했는데, music 파라미터 때문에 매번 새로운 객체를 생성하는중.. 좀 아쉬운 부분
+        //개선할려면 lyrics에 넣는게 아니라, lyrics는 onTrackStart시 id 받와와서 파싱하게 하면 좀더 괜찮음 리스너만 등록해줘도 되고
+        playerManager.loadItem(identifier, AudioSearchResultHandler(audioPlayer, musicQueue, lyricsWriter, music))
     }
 
     fun stopMusic() {
@@ -68,17 +45,15 @@ class PlayerManager(
     }
 
     private fun parseMusicArgument(argument: String): String {
-        //http scheme이 아닌경우 ytsearch로
-        return try {
+        return runCatching {
+            //http scheme이 아닌경우 ytsearch로
             if (URI(argument).scheme == null)
+            //throw 해서 getOrElse에서 처리하게
                 throw Exception("It's not URI Format")
             else
                 argument
-        }
-        catch (e: Exception) {
-            "ytsearch:$argument"
-        }
-    }
+        }.getOrElse { "ytsearch:$argument" }
 
+    }
 
 }
