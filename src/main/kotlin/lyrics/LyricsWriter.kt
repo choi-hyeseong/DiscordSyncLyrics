@@ -52,6 +52,7 @@ class LyricsWriter(private val lyricsParser: LyricsParser) : AudioEventAdapter()
 
     override fun onTrackEnd(player: AudioPlayer?, track: AudioTrack?, endReason: AudioTrackEndReason?) {
         job?.cancel() //코루틴 종료
+        // TODO unknown message 해결 - 가사 못찾는 경우 발생함
         message?.delete()?.queue() //종료시 삭제
     }
 }
