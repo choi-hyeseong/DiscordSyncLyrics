@@ -15,14 +15,14 @@ class LyricsParser {
     val gson = Gson()
 
     // suspend fun으로 해서 다른 쓰레드에서 수행할 수 있게 하는게 맞을 거 같음.
-    fun parse(identifier : String) : Lyrics? {
+    suspend fun parse(identifier : String) : Lyrics? {
         val requestBuilder = Request.Builder().url(url.plus(identifier)).get() //get 요청 request 생성
         val request = requestBuilder.build()
 
         val response = okHttpClient.newCall(request).execute()
-        if (response.isSuccessful) {
+        return if (response.isSuccessful) {
             //성공적으로 요청 됐을경우
-            return try {
+            try {
                 //우선 DTO로 파싱
                 val responseDTO = gson.fromJson(response.body?.string(), Array<LyricsResponseDTO>::class.java)?.get(0)
                 responseDTO?.toLyrics()
@@ -30,9 +30,8 @@ class LyricsParser {
                 println("요청에 실패하였습니다. $e")
                 null
             }
-        }
-        else
-            return null
+        } else
+            null
     }
 
 }

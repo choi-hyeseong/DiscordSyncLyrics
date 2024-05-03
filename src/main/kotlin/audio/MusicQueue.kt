@@ -10,15 +10,17 @@ import java.util.LinkedList
 import java.util.Queue
 import kotlin.concurrent.thread
 
-class MusicQueue : AudioEventAdapter() {
+
+//오디오 플레이어 하나당 하나의 큐가 할당되어야 함
+class MusicQueue() : AudioEventAdapter() {
 
     private val queue : Queue<AudioTrack> = LinkedList() //Queue의 구현체로 LinkedList 사용
 
 
-    //해당 addMusic을 쓰는 클래스는 PlayerManger이므로 audioPlayer 원본을 갖고 있음.
-    fun addMusic(audioPlayer: AudioPlayer, audioTrack: AudioTrack) {
-        if (!audioPlayer.startTrack(audioTrack, true)) //no interrupt가 되어 있기 때문에 이미 재생중인경우 false를 반환함
-            queue.add(audioTrack) //이때 큐에 추가한다.
+    //addMusic의 파라미터로 받는 audioPlayer는 좋지 않음.
+    //큐가 담당하는 player와 파라미터로 들어온 audioPlayer가 동일하지 않을 수 있음
+    fun addMusic(audioTrack: AudioTrack) {
+        queue.add(audioTrack) //큐에 추가한다.
     }
 
     override fun onTrackStart(player: AudioPlayer?, track: AudioTrack?) {
