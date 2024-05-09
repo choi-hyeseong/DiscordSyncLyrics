@@ -33,11 +33,11 @@ class PlayerManager(
     fun getHandler(): AudioPlayerHandler = AudioPlayerHandler(audioPlayer) //음악 재생에 필요한 Handler 제공
 
     //음악로드, 입력받은 문장을 파싱해서 검색
-    fun loadMusic(music: String) {
+    fun loadMusic(music: String, callback : MusicSearchCallback) {
         val identifier = parseMusicArgument(music).also { println("Parsed Argument $it") }
         //Handler로 분리했는데, music 파라미터 때문에 매번 새로운 객체를 생성하는중.. 좀 아쉬운 부분
         //개선할려면 lyrics에 넣는게 아니라, lyrics는 onTrackStart시 id 받와와서 파싱하게 하면 좀더 괜찮음 리스너만 등록해줘도 되고
-        playerManager.loadItem(identifier, AudioSearchResultHandler(audioPlayer, musicQueue, lyricsWriter, music))
+        playerManager.loadItem(identifier, AudioSearchResultHandler(audioPlayer, musicQueue, lyricsWriter, music, callback))
     }
 
     fun stopMusic() {
