@@ -26,12 +26,18 @@ class LyricsWriter(private val lyricsParser: LyricsParser) : AudioEventAdapter()
 
     //실제 가사 출력하는 함수 - 무한루프
     private suspend fun runLyricsPrint(audioPlayer: AudioPlayer, lyrics: Lyrics) {
-        message = jda.getTextChannelsByName("일반",true)[0].sendMessage(lyrics.syncedLyrics.poll().lyrics).complete()
+        val syncedLyrics = lyrics.syncedLyrics
+        val channel = jda.getTextChannelsByName("일반",true)[0]
+        //제일 앞의 가사 출력
+        message = channel.sendMessage(syncedLyrics.poll().text).complete()
         while (true) {
             val isPrintSuccess = runCatching {
                 // TODO send empty message 해결
-                if (lyrics.syncedLyrics.peek().time <= audioPlayer.playingTrack?.position?.div(1000L)!!)
-                    message = message!!.editMessage(lyrics.syncedLyrics.poll().lyrics).complete()
+                val nextLyricsTime = syncedLyrics.peek().time
+                val playingTime = audioPlayer.playingTrack!!.position.div(1000L) //초단위?
+                if (nextLyricsTime <= playingTime)
+                    message = message!!.editMessage(syncedLyrics.poll().text).complete()
+                    
                 Thread.sleep(500)
             }.isSuccess //오류 없이 출력이 되었는지 확인
             if (!isPrintSuccess)

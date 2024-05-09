@@ -16,5 +16,5 @@ data class Lyrics (
 
 data class SyncedLyrics(
     val time : Long,
-    val lyrics : String
+    val text : String
 )
